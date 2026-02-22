@@ -1,0 +1,37 @@
+{
+  "name": "collabcore-backend",
+  "version": "1.0.0",
+  "description": "backend API for project management",
+  "keywords": [
+    "node",
+    "express",
+    "jwt",
+    "rbac"
+  ],
+  "homepage": "https://github.com/mrunal0502/collabcore-backend#readme",
+  "bugs": {
+    "url": "https://github.com/mrunal0502/collabcore-backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrunal0502/collabcore-backend.git"
+  },
+  "license": "ISC",
+  "author": "Mrunal Rawade",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.2.1",
+    "nodemon": "^3.1.14"
+  }
+}
