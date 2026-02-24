@@ -2,7 +2,11 @@ import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
-import { sendEmail } from "../utils/email.js";
+import {
+  emailVerificationMailgenContent,
+  forgotPasswordMailgenContent,
+  sendEmail,
+} from "../utils/mail.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
