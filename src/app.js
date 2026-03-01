@@ -34,4 +34,10 @@ app.use("/api/v1/auth", authRouter);
 import projectRouter from "../routes/project.routes.js";
 app.use("/api/v1/projects", projectRouter);
 
+import taskRouter from "../routes/task.routes.js";
+app.use("/api/v1", taskRouter);
+
+import noteRouter from "../routes/note.routes.js";
+app.use("/api/v1/notes", noteRouter);
+
 export default app;

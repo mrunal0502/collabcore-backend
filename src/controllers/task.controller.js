@@ -8,7 +8,11 @@ import { Task } from "../models/task.model.js";
 import { SubTask } from "../models/subtask.model.js";
 import { ProjectMember } from "../models/projectmember.model.js";
 import mongoose from "mongoose";
-import { AvailableUserRole, UserRolesEnum } from "../utils/constants.js";
+import {
+  AvailableUserRole,
+  UserRolesEnum,
+  AvailableTaskStatus,
+} from "../utils/constants.js";
 
 const getTask = asyncHandler(async (req, res) => {
   const { projectId } = req.params;
@@ -19,16 +23,19 @@ const getTask = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Project not found");
   }
 
-  const tasks = await Task.find({ project: projectId });
+  const tasks = await Task.find({ project: projectId }).populate(
+    "assignedTo",
+    "avatar username fullName",
+  );
 
   return res
     .status(200)
-    .json(new ApiResponse(200, tasks, "Tasks found successfully"));
+    .json(new ApiResponse(200, tasks, "Tasks fetched successfully"));
 });
 
 const createTask = asyncHandler(async (req, res) => {
   const { projectId } = req.params;
-  const { title, description, assignedTo } = req.body;
+  const { title, description, assignedTo, status } = req.body;
 
   if (!title || !description || !assignedTo) {
     throw new ApiError(400, "All fields are required");
@@ -39,6 +46,16 @@ const createTask = asyncHandler(async (req, res) => {
   if (!project) {
     throw new ApiError(404, "Project not found");
   }
+
+  const files = req.files || [];
+
+  const attachments = files.map((file) => {
+    return {
+      url: `${process.env.SERVER_URL}/images/${file.originalname}`,
+      mimetype: file.mimetype,
+      size: file.size,
+    };
+  });
 
   const user = await User.findById(assignedTo);
 
@@ -58,11 +75,13 @@ const createTask = asyncHandler(async (req, res) => {
   const task = await Task.create({
     title,
     description,
-
-    assignedTo,
+    assignedTo: assignedTo
+      ? new mongoose.Types.ObjectId(assignedTo)
+      : undefined,
     assignedBy: req.user._id,
-
+    status: AvailableTaskStatus.TODO,
     project: projectId,
+    attachments,
   });
 
   return res
@@ -73,15 +92,84 @@ const createTask = asyncHandler(async (req, res) => {
 const getTaskById = asyncHandler(async (req, res) => {
   const { taskId } = req.params;
 
-  const task = await Task.findById(taskId);
+  const task = await Task.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(taskId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "assignedTo",
+        foreignField: "_id",
+        as: "assignedTo",
+        pipeline: [
+          {
+            _id: 1,
+            username: 1,
+            avatar: 1,
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "subtasks",
+        localField: "_id",
+        foreignField: "task",
+        as: "subtasks",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "createdBy",
+              foreignField: "_id",
+              as: "createdBy",
+              pipeline: [
+                {
+                  $project: {
+                    _id: 1,
+                    username: 1,
+                    fullName: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addField: {
+              createdBy: {
+                $arrayElemAt: ["$createdBy", 0],
+              },
+            },
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        assignedTo: {
+          $arrayElemAt: ["$assignedTo", 0],
+        },
+      },
+    },
+  ]);
 
-  if (!task) {
+  if (!task || task.length === 0) {
     throw new ApiError(404, "Task not found");
   }
 
-  if (task.project === projectId) {
-    throw new ApiError(400, "Task does not belong to thr project");
-  }
+  //   const task = await Task.findById(taskId);
+
+  //   if (!task) {
+  //     throw new ApiError(404, "Task not found");
+  //   }
+
+  //   if (task.project === projectId) {
+  //     throw new ApiError(400, "Task does not belong to the project");
+  //   }
 
   return res
     .status(200)
@@ -132,7 +220,7 @@ const updateTask = asyncHandler(async (req, res) => {
         title,
         description,
         assignedTo,
-        status,
+        status: AvailableTaskStatus.TODO,
       },
     },
     { new: true },

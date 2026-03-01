@@ -97,6 +97,30 @@ const addMemberToProjectValidator = () => {
   ];
 };
 
+const createTaskValidator = () => {
+  return [
+    body("title").notEmpty().withMessage("Title is required"),
+
+    body("description").notEmpty().withMessage("Description is required"),
+  ];
+};
+
+const createSubTaskValidator = () => {
+  return [body("title").notEmpty().withMessage("Title is required")];
+};
+
+const updateTaskValidator = () => {
+  return [
+    body("title").optional(),
+    body("description").optional(),
+    body("assignedTo").optional(),
+    body("status").optional(),
+  ];
+};
+const createNoteValidator = () => {
+  return [body("content").notEmpty().withMessage("Content is required")];
+};
+
 export {
   userRegisterValidator,
   userLoginValidator,
@@ -105,4 +129,8 @@ export {
   userResetForgotPasswordValidator,
   createProjectValidator,
   addMemberToProjectValidator,
+  createTaskValidator,
+  createSubTaskValidator,
+  updateTaskValidator,
+  createNoteValidator,
 };

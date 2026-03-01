@@ -22,6 +22,8 @@ import {
 } from "../validators/index.js";
 import { AvailableUserRole, UserRolesEnum } from "../utils/constants.js";
 
+import { validate } from "../middleware/validator.middleware.js";
+
 const router = Router();
 router.use(verifyJWT);
 
