@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-import { AvailableUserRole } from "../utils/constant.js";
+import { AvailableUserRole, TaskStatusEnum } from "../utils/constants.js";
 
 const userRegisterValidator = () => {
   return [
