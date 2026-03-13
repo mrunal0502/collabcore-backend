@@ -81,7 +81,9 @@ const getProjectById = asyncHandler(async (req, res) => {
 });
 
 const createProject = asyncHandler(async (req, res) => {
+  console.log(req.user);
   const { name, description } = req.body;
+
   if (!name) {
     throw new ApiError(400, "Project name is required");
   }
@@ -89,12 +91,12 @@ const createProject = asyncHandler(async (req, res) => {
   const project = await Project.create({
     name,
     description,
-    createdBy: new mongoose.Types.ObjectId(req.user._id), //this unsures that the createdBy field is stored as an ObjectId in the database
+    createdBy: req.user._id,
   });
 
   await ProjectMember.create({
-    user: new mongoose.Types.ObjectId(req.user._id),
-    project: new mongoose.Types.ObjectId(project._id),
+    user: req.user._id,
+    project: project._id,
     role: UserRolesEnum.ADMIN,
   });
 
